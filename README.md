@@ -1,6 +1,7 @@
-# tvid
+## A Terminal Video Player
 
-## Terminal Video Player
+**requires ffmpeg to be in PATH**
 
-requires ffmpeg to be in PATH
+tvid renders using 24-bit color.
 
+Results may vary, especially for terminals that do not support 24-bit color
