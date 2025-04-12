@@ -4,4 +4,4 @@
 
 tvid renders using 24-bit color.
 
-Results may vary, especially for terminals that do not support 24-bit color
+Results may vary for terminals that do not support 24-bit color

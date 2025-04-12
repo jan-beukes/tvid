@@ -6,9 +6,6 @@ import "core:fmt"
 import "core:strings"
 import "core:strconv"
 import "core:time"
-import "core:thread"
-import "core:sync"
-import "core:compress"
 
 import "core:c/libc"
 import "core:io"
@@ -37,8 +34,6 @@ Video_Output :: struct {
 }
 
 Pixel :: [3]u8
-
-frame_buffers: [4][]u8
 
 // this is honestly pretty sketch since mac doesn't have ioctl defined we define it here
 get_term_size :: proc() -> (rows: u16, cols: u16) {
