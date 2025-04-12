@@ -3,6 +3,7 @@ package tvid
 import "base:runtime"
 import "core:log"
 import "core:fmt"
+import "core:sys/windows"
 import "core:strings"
 import "core:strconv"
 import "core:time"
@@ -24,7 +25,7 @@ ANSI_SHOW_CURSOR :: ESC + "?25h"
 ANSI_CLEAR_SCREEN :: ESC + "2J"
 
 @(rodata)
-ascii_table := " .',:;xlxokXdO0KN"
+ascii_table := ".,:;lxokdXO0KN#"
 
 Video_Output :: struct {
     process: os.Process,
@@ -38,16 +39,23 @@ Pixel :: [3]u8
 // this is honestly pretty sketch since mac doesn't have ioctl defined we define it here
 get_term_size :: proc() -> (rows: u16, cols: u16) {
 
-    // from ioctls.h
-    TIOCGWINSZ :: 0x5413
+    when ODIN_OS == .Windows {
+        std_handle := windows.GetStdHandle(windows.STD_OUTPUT_HANDLE)
+        csbi: windows.CONSOLE_SCREEN_BUFFER_INFO
+        windows.GetConsoleScreenBufferInfo(std_handle, &csbi)
 
-    // from ioctl-types.h
-    Win_Size :: struct {
-        rows, cols: u16,
-        xpixel, ypixel: u16,
-    }
+        rows, cols = csbi.dwSize.Y, csbi.dwSize.X
+        return
+    } else {
+        // from ioctls.h
+        TIOCGWINSZ :: 0x5413
 
-    when ODIN_OS != .Windows {
+        // from ioctl-types.h
+        Win_Size :: struct {
+            rows, cols: u16,
+            xpixel, ypixel: u16,
+        }
+
         foreign {
             ioctl :: proc(fd: i32, request: u32, arg: uintptr) -> uintptr ---
         }
@@ -55,11 +63,10 @@ get_term_size :: proc() -> (rows: u16, cols: u16) {
         size: Win_Size
         fd := os.fd(os.stdout)
         ioctl(auto_cast fd, TIOCGWINSZ, uintptr(&size))
+
         rows, cols = size.rows, size.cols
         return
     }
-
-    return 
 }
 
 launch_ffmpeg :: proc(video_file: string, rows: u16) -> (output: Video_Output, ok: bool) {
