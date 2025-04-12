@@ -44,7 +44,7 @@ get_term_size :: proc() -> (rows: u16, cols: u16) {
         csbi: windows.CONSOLE_SCREEN_BUFFER_INFO
         windows.GetConsoleScreenBufferInfo(std_handle, &csbi)
 
-        rows, cols = csbi.dwSize.Y, csbi.dwSize.X
+        rows, cols = u16(csbi.dwSize.Y), u16(csbi.dwSize.X)
         return
     } else {
         // from ioctls.h
@@ -143,7 +143,7 @@ launch_ffmpeg :: proc(video_file: string, rows: u16) -> (output: Video_Output, o
     return
 }
 
-pixel_luminance :: proc(pixel: Pixel) -> f32 {
+pixel_luminance :: #force_inline proc(pixel: Pixel) -> f32 {
     r := f32(pixel.r) / 255.0
     g := f32(pixel.g) / 255.0
     b := f32(pixel.b) / 255.0
@@ -240,7 +240,7 @@ main :: proc() {
         diff := time.diff(prev_frame_time, now)
         if diff > frame_time {
             prev_frame_time = time.now()
-            n, err := os.read(video.stdout, buf[:])
+            n, err := os.read_at_least(video.stdout, buf[:], bytes_per_frame)
             if err != nil do break
             print_frame(buf[:n], resx, resy)
 
